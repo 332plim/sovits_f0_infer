@@ -25,7 +25,7 @@ _ = utils.load_checkpoint("pth/G.pth", net_g_ms, None)
 
 def resize2d(source, target_len):
     source[source < 0.001] = np.nan
-    target = np.interp(np.arange(0, len(source), len(source) / target_len), np.arange(0, len(source)), source)
+    target = np.interp(np.arange(0, len(source)*target_len, len(source))/ target_len, np.arange(0, len(source)), source)
     return np.nan_to_num(target)
 
 
