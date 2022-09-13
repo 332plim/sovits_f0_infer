@@ -3,6 +3,7 @@ import shutil
 import utils
 import torch
 import hubert
+import librosa
 import logging
 import soundfile
 import torchcrepe
@@ -36,12 +37,10 @@ def cut(cut_time, file_path, out_dir):
     audio_segment[total * cut_time * 1000:].export(f"{out_dir}/vocals-{total}.wav", format="wav")  # 缺少结尾的音频片段
 
 
-def resample_to_22050(source_path):
-    audio, sample_rate = torchaudio.load(source_path)
-    if sample_rate != 16000:
-        audio = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)(audio)
-    audio22050 = torchaudio.transforms.Resample(orig_freq=16000, new_freq=22050)(audio)[0]
-    soundfile.write("./raw/vocals.wav", audio22050, 22050)
+def resample_to_22050(audio_path):
+    raw_audio, raw_sample_rate = torchaudio.load(audio_path)
+    audio_22050 = torchaudio.transforms.Resample(orig_freq=raw_sample_rate, new_freq=22050)(raw_audio)[0]
+    soundfile.write("./raw/vocals.wav", audio_22050, 22050)
 
 
 def get_text(text, hps):
@@ -49,7 +48,6 @@ def get_text(text, hps):
     if hps.data.add_blank:
         text_norm = commons.intersperse(text_norm, 0)
     text_norm = torch.LongTensor(text_norm)
-    print(text_norm.shape)
     return text_norm
 
 
@@ -91,20 +89,23 @@ cut_time = 15
 vc_transform = 1
 speaker_id = 0
 
-resample_to_22050('./raw/vocals.wav')
+clean_name = "vocals"
+bgm_name = "bgm"
+out_audio_name = clean_name
+
+resample_to_22050(f'./raw/{clean_name}.wav')
 del_file("./wav_temp/input")
 del_file("./wav_temp/output")
 
-file_name = "vocals.wav"
-raw_audio_path = "./raw/" + file_name
-out_audio_name = file_name.split(".")[0]
+raw_audio_path = f"./raw/{clean_name}.wav"
+
 audio, sample_rate = torchaudio.load(raw_audio_path)
 
 audio_time = audio.shape[-1] / 22050
 if audio_time > 1.3 * cut_time:
     cut(int(cut_time), raw_audio_path, "./wav_temp/input")
 else:
-    shutil.copy("./raw/vocals.wav", "./wav_temp/input/vocals-0.wav")
+    shutil.copy(f"./raw/{clean_name}.wav", f"./wav_temp/input/{clean_name}-0.wav")
 file_list = os.listdir("./wav_temp/input")
 
 count = 0
@@ -113,7 +114,6 @@ for file_name in file_list:
     vc_transform = 1
     audio, sample_rate = torchaudio.load(source_path)
     input_size = audio.shape[-1]
-    print(input_size)
     if sample_rate != 16000:
         audio = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)(audio)[0]
     audio22050 = torchaudio.transforms.Resample(orig_freq=16000, new_freq=22050)(audio)[0]
@@ -134,8 +134,7 @@ for file_name in file_list:
         x_tst_lengths = torch.LongTensor([stn_tst.size(0)])
         audio = net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=0, noise_scale_w=0, length_scale=1)[0][
             0, 0].data.float().numpy()
-    print(audio.shape[0])
     soundfile.write("./wav_temp/output/" + file_name, audio, int(audio.shape[0] / input_size * 22050))
     count += 1
     print("%s success: %.2f%%" % (file_name, 100 * count / len(file_list)))
-merge.run(out_audio_name)
+merge.run(clean_name, bgm_name, out_audio_name)
