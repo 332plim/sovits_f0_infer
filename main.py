@@ -104,7 +104,7 @@ audio, sample_rate = torchaudio.load(raw_audio_path)
 
 audio_time = audio.shape[-1] / 22050
 if audio_time > 1.3 * cut_time:
-    cut(int(cut_time), raw_audio_path, "./wav_temp/input")
+    cut(int(cut_time), raw_audio_path, vocal_name, "./wav_temp/input")
 else:
     shutil.copy(f"./raw/{clean_name}.wav", f"./wav_temp/input/{clean_name}-0.wav")
 file_list = os.listdir("./wav_temp/input")
