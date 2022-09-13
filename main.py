@@ -27,14 +27,15 @@ def del_file(path_data):
             os.remove(file_data)
 
 
-def cut(cut_time, file_path, out_dir):
+def cut(cut_time, file_path, vocal_name, out_dir):
     audio_segment = AudioSegment.from_file(file_path, format='wav')
 
     total = int(audio_segment.duration_seconds / cut_time)  # 计算音频切片后的个数
     for i in range(total):
         # 将音频10s切片，并以顺序进行命名
-        audio_segment[i * cut_time * 1000:(i + 1) * cut_time * 1000].export(f"{out_dir}/vocals-{i}.wav", format="wav")
-    audio_segment[total * cut_time * 1000:].export(f"{out_dir}/vocals-{total}.wav", format="wav")  # 缺少结尾的音频片段
+        audio_segment[i * cut_time * 1000:(i + 1) * cut_time * 1000].export(f"{out_dir}/{vocal_name}-{i}.wav",
+                                                                            format="wav")
+    audio_segment[total * cut_time * 1000:].export(f"{out_dir}/{vocal_name}-{total}.wav", format="wav")  # 缺少结尾的音频片段
 
 
 def resample_to_22050(audio_path):
