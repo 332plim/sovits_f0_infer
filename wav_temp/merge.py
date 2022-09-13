@@ -15,7 +15,7 @@ def add_db(music1, music2):
 
 
 def wav_mix(file_name):
-    bgm = AudioSegment.from_wav("./raw/accompaniment.wav")
+    bgm = AudioSegment.from_wav("./raw/bgm.wav")
     vits = AudioSegment.from_wav("./results/out_vits.wav")
     vocals = AudioSegment.from_wav("./raw/vocals.wav")
     vits = add_db(vocals, vits)
@@ -47,7 +47,7 @@ def run(file_name):
     in_files.append(out_path)
     wav_combine(in_files)
     print("out vits success")
-    if os.path.exists("./raw/accompaniment.wav"):
+    if os.path.exists("./raw/bgm.wav"):
         wav_mix(file_name)
         print("out song success")
 
