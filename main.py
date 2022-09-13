@@ -22,9 +22,8 @@ hubert_soft = hubert.hubert_soft('pth/hubert.pt')
 # python删除文件的方法 os.remove(path)path指的是文件的绝对路径,如：
 def del_file(path_data):
     for i in os.listdir(path_data):  # os.listdir(path_data)#返回一个列表，里面是当前目录下面的所有东西的相对路径
-        file_data = path_data + "\\" + i  # 当前文件夹的下面的所有东西的绝对路径
-        if os.path.isfile(file_data):  # os.path.isfile判断是否为文件,如果是文件,就删除.如果是文件夹.递归给del_file.
-            os.remove(file_data)
+      os.remove(path_data+i)
+
 
 
 def cut(cut_time, file_path, vocal_name, out_dir):
@@ -41,7 +40,7 @@ def cut(cut_time, file_path, vocal_name, out_dir):
 def resample_to_22050(audio_path):
     raw_audio, raw_sample_rate = torchaudio.load(audio_path)
     audio_22050 = torchaudio.transforms.Resample(orig_freq=raw_sample_rate, new_freq=22050)(raw_audio)[0]
-    soundfile.write("./raw/vocals.wav", audio_22050, 22050)
+    soundfile.write(audio_path, audio_22050, 22050)
 
 
 def get_text(text, hps):
