@@ -256,11 +256,12 @@ def hubert_soft(
     Args:
         path (str): path of a pretrained model
     """
+    dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     hubert = HubertSoft()
     checkpoint = torch.load(path)
     consume_prefix_in_state_dict_if_present(checkpoint, "module.")
     hubert.load_state_dict(checkpoint)
-    hubert.eval()
+    hubert.eval().to(dev)
     return hubert
 
 
