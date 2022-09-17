@@ -16,7 +16,7 @@ def add_db(music1, music2):
 
 def wav_mix(vocals_name, bgm_name, out_name):
     bgm = AudioSegment.from_wav(f"./raw/{bgm_name}.wav")
-    vits = AudioSegment.from_wav("./results/out_vits.wav")
+    vits = AudioSegment.from_wav(f"./results/{vocals_name}.wav")
     vocals = AudioSegment.from_wav(f"./raw/{vocals_name}.wav")
     vits = add_db(vocals, vits)
     # mix sound2 with sound1, starting at 5000ms into sound1)
@@ -43,7 +43,7 @@ def run(vocals_name, bgm_name, out_name):
     in_files = [len(file_list)]
     for i in range(0, len(file_list)):
         in_files.append(f"./wav_temp/output/{vocals_name}-%s.wav" % i)
-    out_path = './results/out_vits.wav'
+    out_path = f'./results/{vocals_name}.wav'
     in_files.append(out_path)
     wav_combine(in_files)
     print("out vits success")
