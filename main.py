@@ -88,12 +88,11 @@ tts = True
 cut_time = 15
 vc_transform = 1
 
-clean_name = "有点甜"
+clean_name = "满月与星空"
 bgm_name = "bgm1"
-model_name = "G_100000"
+model_name = "887_epochs"
 config_name = "lang_pre.json"
-id_list = [0, 1, 2, 4, 5, 6, 7, 8, 9]
-
+id_list = [0]
 hubert_soft = hubert.hubert_soft('pth/hubert.pt')
 
 # 这个是config.json也换成自己的
