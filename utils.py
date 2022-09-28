@@ -22,7 +22,10 @@ def load_checkpoint(checkpoint_path, model, optimizer=None):
   learning_rate = checkpoint_dict['learning_rate']
   if optimizer is not None:
     optimizer.load_state_dict(checkpoint_dict['optimizer'])
+  # print(1111)
   saved_state_dict = checkpoint_dict['model']
+  # print(1111)
+
   if hasattr(model, 'module'):
     state_dict = model.module.state_dict()
   else:
@@ -134,10 +137,12 @@ def load_wav_to_torch(full_path):
   sampling_rate, data = read(full_path)
   return torch.FloatTensor(data.astype(np.float32)), sampling_rate
 
-def load_unit_audio_pairs(filename, split="|"):
+
+def load_filepaths_and_text(filename, split="|"):
   with open(filename, encoding='utf-8') as f:
-    unit_audio_pairs = [line.strip().split(split) for line in f]
-  return unit_audio_pairs
+    filepaths_and_text = [line.strip().split(split) for line in f]
+  return filepaths_and_text
+
 
 def get_hparams(init=True):
   parser = argparse.ArgumentParser()
@@ -147,11 +152,11 @@ def get_hparams(init=True):
                       help='Model name')
   
   args = parser.parse_args()
-
   model_dir = os.path.join("./logs", args.model)
+
   if not os.path.exists(model_dir):
     os.makedirs(model_dir)
-  
+
   config_path = args.config
   config_save_path = os.path.join(model_dir, "config.json")
   if init:
