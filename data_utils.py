@@ -1,14 +1,12 @@
-import time
 import os
-import random
-import numpy as np
+import time
 import torch
-import torch.utils.data
-import numpy as np
+import random
 import commons
+import numpy as np
+import torch.utils.data
 from mel_processing import spectrogram_torch
 from utils import load_wav_to_torch, load_filepaths_and_text
-from text import text_to_sequence, cleaned_text_to_sequence
 
 
 def dropout1d(myarray, ratio=0.5):
@@ -59,11 +57,11 @@ class TextAudioLoader(torch.utils.data.Dataset):
 
     def get_audio_text_pair(self, audiopath_and_text):
         # separate filename and text
-        audiopath, text, pitch = audiopath_and_text[0], audiopath_and_text[1],audiopath_and_text[2]
+        audiopath, text, pitch = audiopath_and_text[0], audiopath_and_text[1], audiopath_and_text[2]
         text = self.get_text(text)
         spec, wav = self.get_audio(audiopath)
         pitch = self.get_pitch(pitch)
-        return (text, spec, wav, pitch)
+        return text, spec, wav, pitch
 
     def get_pitch(self, pitch):
 
@@ -99,7 +97,7 @@ class TextAudioLoader(torch.utils.data.Dataset):
         return len(self.audiopaths_and_text)
 
 
-class TextAudioCollate():
+class TextAudioCollate:
     """ Zero-pads model inputs and targets
     """
 
@@ -122,7 +120,6 @@ class TextAudioCollate():
         max_wav_len = max([x[2].size(1) for x in batch])
         max_pitch_len = max([x[3].shape[0] for x in batch])
         # print(batch)
-
 
         text_lengths = torch.LongTensor(len(batch))
         spec_lengths = torch.LongTensor(len(batch))
@@ -205,13 +202,14 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
 
     def get_audio_text_speaker_pair(self, audiopath_sid_text):
         # separate filename, speaker_id and text
-        audiopath, sid, text, pitch = audiopath_sid_text[0], audiopath_sid_text[1], audiopath_sid_text[2], audiopath_sid_text[3]
+        audiopath, sid, text, pitch = audiopath_sid_text[0], audiopath_sid_text[1], audiopath_sid_text[2], \
+                                      audiopath_sid_text[3]
         text = self.get_text(text)
         spec, wav = self.get_audio(audiopath)
         sid = self.get_sid(sid)
         pitch = self.get_pitch(pitch)
 
-        return (text, spec, wav, pitch, sid)
+        return text, spec, wav, pitch, sid
 
     def get_audio(self, filename):
         audio, sampling_rate = load_wav_to_torch(filename)
@@ -235,7 +233,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         soft = np.load(text)
         text_norm = torch.FloatTensor(soft)
         return text_norm
-    
+
     def get_pitch(self, pitch):
         return torch.LongTensor(np.load(pitch))
 
@@ -250,7 +248,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         return len(self.audiopaths_sid_text)
 
 
-class TextAudioSpeakerCollate():
+class TextAudioSpeakerCollate:
     """ Zero-pads model inputs and targets
     """
 
@@ -310,7 +308,7 @@ class TextAudioSpeakerCollate():
 
         if self.return_ids:
             return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths, pitch_padded, sid, ids_sorted_decreasing
-        return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths,pitch_padded , sid
+        return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths, pitch_padded, sid
 
 
 class DistributedBucketSampler(torch.utils.data.distributed.DistributedSampler):
@@ -400,7 +398,7 @@ class DistributedBucketSampler(torch.utils.data.distributed.DistributedSampler):
 
         if hi > lo:
             mid = (hi + lo) // 2
-            if self.boundaries[mid] < x and x <= self.boundaries[mid + 1]:
+            if self.boundaries[mid] < x <= self.boundaries[mid + 1]:
                 return mid
             elif x <= self.boundaries[mid]:
                 return self._bisect(x, lo, mid)

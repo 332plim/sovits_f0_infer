@@ -1,5 +1,5 @@
 import torch
-from torch.nn import functional as F
+from torch.nn import functional as t_func
 
 import numpy as np
 
@@ -69,7 +69,7 @@ def unconstrained_rational_quadratic_spline(inputs,
     logabsdet = torch.zeros_like(inputs)
 
     if tails == 'linear':
-        unnormalized_derivatives = F.pad(unnormalized_derivatives, pad=(1, 1))
+        unnormalized_derivatives = t_func.pad(unnormalized_derivatives, pad=(1, 1))
         constant = np.log(np.exp(1 - min_derivative) - 1)
         unnormalized_derivatives[..., 0] = constant
         unnormalized_derivatives[..., -1] = constant
@@ -112,21 +112,21 @@ def rational_quadratic_spline(inputs,
     if min_bin_height * num_bins > 1.0:
         raise ValueError('Minimal bin height too large for the number of bins')
 
-    widths = F.softmax(unnormalized_widths, dim=-1)
+    widths = t_func.softmax(unnormalized_widths, dim=-1)
     widths = min_bin_width + (1 - min_bin_width * num_bins) * widths
     cumwidths = torch.cumsum(widths, dim=-1)
-    cumwidths = F.pad(cumwidths, pad=(1, 0), mode='constant', value=0.0)
+    cumwidths = t_func.pad(cumwidths, pad=(1, 0), mode='constant', value=0.0)
     cumwidths = (right - left) * cumwidths + left
     cumwidths[..., 0] = left
     cumwidths[..., -1] = right
     widths = cumwidths[..., 1:] - cumwidths[..., :-1]
 
-    derivatives = min_derivative + F.softplus(unnormalized_derivatives)
+    derivatives = min_derivative + t_func.softplus(unnormalized_derivatives)
 
-    heights = F.softmax(unnormalized_heights, dim=-1)
+    heights = t_func.softmax(unnormalized_heights, dim=-1)
     heights = min_bin_height + (1 - min_bin_height * num_bins) * heights
     cumheights = torch.cumsum(heights, dim=-1)
-    cumheights = F.pad(cumheights, pad=(1, 0), mode='constant', value=0.0)
+    cumheights = t_func.pad(cumheights, pad=(1, 0), mode='constant', value=0.0)
     cumheights = (top - bottom) * cumheights + bottom
     cumheights[..., 0] = bottom
     cumheights[..., -1] = top

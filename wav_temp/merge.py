@@ -19,7 +19,6 @@ def wav_mix(vocals_name, bgm_name, out_name):
     vits = AudioSegment.from_wav(f"./results/{vocals_name}.wav")
     vocals = AudioSegment.from_wav(f"./raw/{vocals_name}.wav")
     vits = add_db(vocals, vits)
-    # mix sound2 with sound1, starting at 5000ms into sound1)
     output = bgm.overlay(vits)
     # save the result
     output.export(f"./results/{out_name}.mp3", format="mp3")

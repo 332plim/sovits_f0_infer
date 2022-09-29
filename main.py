@@ -1,20 +1,18 @@
-import os
-import json
-import utils
-import torch
-import hubert
-import shutil
 import logging
+import os
+import shutil
+
 import demjson
 import soundfile
-import infer_tool
-import torchcrepe
+import torch
 import torchaudio
-import numpy as np
-from wav_temp import merge
+
+import hubert_model
+import infer_tool
+import utils
 from models import SynthesizerTrn
-from text import text_to_sequence
 from preprocess_wave import FeatureInput
+from wav_temp import merge
 
 logging.getLogger('numba').setLevel(logging.WARNING)
 
@@ -22,7 +20,7 @@ logging.getLogger('numba').setLevel(logging.WARNING)
 def get_units(path):
     source, sr = torchaudio.load(path)
     source = torchaudio.functional.resample(source, sr, 16000)
-    source = source.unsqueeze(0)
+    source = source.unsqueeze(0).to(dev)
     with torch.inference_mode():
         units = hubert_soft.units(source)
         return units
@@ -46,13 +44,13 @@ trans = [-3]  # 加减半音数（可为正负）s
 id_list = [2]
 
 # 每次合成长度，建议30s内，太高了爆掉显存(gtx1066一次15s以内）
-cut_time = 15
-model_name = "89_epochs"  # 模型名称（pth文件夹下）
+cut_time = 60
+model_name = "530_epochs"  # 模型名称（pth文件夹下）
 config_name = "yilanqiu.json"  # 模型配置（config文件夹下）
 
 # 自行下载hubert-soft-0d54a1f4.pt改名为hubert.pt放置于pth文件夹下
 # https://github.com/bshall/hubert/releases/tag/v0.1
-hubert_soft = hubert.hubert_soft('pth/hubert.pt')
+hubert_soft = hubert_model.hubert_soft('pth/hubert.pt')
 
 # 以下内容无需修改
 hps_ms = utils.get_hparams_from_file(f"configs/{config_name}")
@@ -97,16 +95,15 @@ for clean_name, bgm_name, tran in zip(clean_names, bgm_names, trans):
             input_size = audio.shape[-1]
 
             sid = torch.LongTensor([int(speaker_id)]).to(dev)
-            soft = get_units(source_path).squeeze(0).numpy()
+            soft = get_units(source_path).squeeze(0).cpu().numpy()
             pitch = transcribe(source_path, soft.shape[0], tran)
             pitch = torch.LongTensor(pitch).unsqueeze(0).to(dev)
             stn_tst = torch.FloatTensor(soft)
-
             with torch.no_grad():
                 x_tst = stn_tst.unsqueeze(0).to(dev)
                 x_tst_lengths = torch.LongTensor([stn_tst.size(0)]).to(dev)
                 audio = \
-                    net_g_ms.infer(x_tst, x_tst_lengths, pitch, sid=sid, noise_scale=.667, noise_scale_w=0.8,
+                    net_g_ms.infer(x_tst, x_tst_lengths, pitch, sid=sid, noise_scale=.3, noise_scale_w=0.5,
                                    length_scale=1)[0][
                         0, 0].data.float().cpu().numpy()
 
