@@ -8,6 +8,6 @@ torchvision
 Unidecode==1.1.1
 torchaudio
 pyworld
-Cython==0.29.21
+Cython==0.29.32
 demjson
 pydub
