@@ -1,6 +1,6 @@
 librosa==0.8.0
 matplotlib==3.3.1
-numpy==1.19.2
+numpy==1.21.6
 phonemizer==2.2.1
 scipy==1.5.2
 torch
@@ -9,3 +9,5 @@ Unidecode==1.1.1
 torchaudio
 pyworld
 Cython==0.29.21
+demjson
+pydub
