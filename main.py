@@ -34,6 +34,7 @@ def transcribe(path, length, transform):
     return coarse_pit
 
 
+# 自行创建pth文件夹，放置hubert、sovits模型，创建raw、results文件夹
 # 可填写音源文件列表，音源文件格式为单声道22050采样率wav，放置于raw文件夹下
 clean_names = ["多声线测试"]
 # bgm、trans分别对应歌曲列表，若能找到相应文件、则自动合并伴奏，若找不到bgm，则输出干声（不使用bgm合成多首歌时，可只随意填写一个不存在的bgm名）
