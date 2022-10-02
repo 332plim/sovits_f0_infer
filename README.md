@@ -14,4 +14,4 @@
 
 ## 改版后使用
 + 模型与配置文件位置同原版，main.py 内参数通原版，需要额外新建一个“record”文件夹在项目根目录，不需要 raw 和 results 文件夹
-+ recorder.py 内的[RECORD_SECONDS](https://github.com/wild233-sys/sovits_f0_infer-colab/blob/sovits_f0_infer_realTime/recorder.py#:~:text=CHUNK%20%3D%20256-,RECORD_SECONDS%20%3D%202,-WAVE_OUTPUT_FILENAME%20%3D%20filepath)为每个录音切片的时长，过短导致模型无法处理，过长会导致变声延迟过大
++ recorder.py 内的 [RECORD_SECONDS](https://github.com/wild233-sys/sovits_f0_infer-colab/blob/sovits_f0_infer_realTime/recorder.py#:~:text=CHUNK%20%3D%20256-,RECORD_SECONDS%20%3D%202,-WAVE_OUTPUT_FILENAME%20%3D%20filepath) 为每个录音切片的时长，过短导致模型无法处理，过长会导致变声延迟过大
