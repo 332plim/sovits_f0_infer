@@ -11,3 +11,5 @@ pyworld
 Cython==0.29.32
 demjson
 pydub
+pyaudio
+wave
