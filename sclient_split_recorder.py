@@ -74,7 +74,7 @@ class Vad(object):
         # 初始短时过零率低门限
         self.zcr2 = 2
         # 允许最大静音长度
-        self.maxsilence = 100     #允许换气的最长时间
+        self.maxsilence = 200     #允许换气的最长时间
         # 语音的最短长度
         self.minlen = 40        #  过滤小音量
         # 偏移值
@@ -161,6 +161,7 @@ class Vad(object):
             audio2 = ""
             stream2 = ""
             wf.close()
+            print(name_num, "结束说话")
             name_num+=1
  
         # if num <=100:
