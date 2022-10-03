@@ -131,7 +131,6 @@ while True:
     if jump:
         name+=1
         continue
-
     threading.Thread(target=play, args=(audio, int(audio.shape[0] / input_size * 22050),)).start()
 
     name+=1
