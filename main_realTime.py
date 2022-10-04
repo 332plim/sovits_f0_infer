@@ -141,10 +141,11 @@ while True:
         continue
     threading.Thread(target=play, args=(audio, int(audio.shape[0] / input_size * 22050),)).start()
     play_status=[1]
-    print("time taken: "+str(time.time()-a),"start playing")
+    print("time taken: "+str(time.time()-a))
+    print("playing",name)
     while play_status[0]==1:
         pass
-    print("play end")
+    print("play end",name)
     name+=1
 
     
