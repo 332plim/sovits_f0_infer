@@ -258,6 +258,6 @@ if __name__ == "__main__":
             byte_obj = stream.read(256)
             stream_test.check_ontime(byte_obj)
             num = num+1
-        except as Error:
+        except Exception as Error::
             print(Error)
             pass
