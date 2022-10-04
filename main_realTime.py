@@ -21,11 +21,12 @@ import threading
 logging.getLogger('numba').setLevel(logging.WARNING)
 infer_tool.del_file("./record/")
 def play(data,fs):
-
+    global play_status
     sd.play(data, fs)
     #print("played")
 
-    #status = sd.wait()
+    status = sd.wait()
+    play_status=[0]
     return
 def get_units(path):
     source, sr = torchaudio.load(path)
@@ -52,16 +53,23 @@ name = 1
 bgm_names = ["bgm"]
 # 合成多少歌曲时，若半音数量不足、自动补齐相同数量（按第一首歌的半音）
 #trans = [int(input("move_half_steps"))]  # 加减半音数（可为正负）s
-trans = [0]
+trans = [-3]
 # 每首歌同时输出的speaker_id
-id_list = [0]
+id_list = [1]
+
+"""
+    "yilanqiu",-Male
+    "opencpop",-Mixed
+    "yunhao",-Mal
+    "jishuang"
+"""
 
 # 每次合成长度，建议30s内，太高了爆掉显存(gtx1066一次15s以内）
 cut_time = 1
-model_name = "nyarumodel"  # 模型名称（pth文件夹下）
-#model_name = "Voice-change-G_1293000"
-config_name = "yilanqiu.json"  # 模型配置（config文件夹下）
-#config_name = "genshin-vc.json"
+#model_name = "270_epochs"  # 模型名称（pth文件夹下）
+model_name = "nyarumodel"
+#config_name = "sovits_pre.json"  # 模型配置（config文件夹下）
+config_name = "yilanqiu.json"
 # 自行下载hubert-soft-0d54a1f4.pt改名为hubert.pt放置于pth文件夹下
 # https://github.com/bshall/hubert/releases/tag/v0.1
 hubert_soft = hubert_model.hubert_soft('pth/hubert.pt')
@@ -82,7 +90,7 @@ _ = net_g_ms.eval().to(dev)
 featureInput = FeatureInput(hps_ms.data.sampling_rate, hps_ms.data.hop_length)
 
 
-threading.Thread(target=os.system, args=("python recorder.py",)).start()
+threading.Thread(target=os.system, args=("python sclient_split_recorder.py",)).start()
 while True:
     a=time.time()
     if os.path.exists("record/"+str(name)+".wav"):
@@ -94,7 +102,7 @@ while True:
         for clean_name, bgm_name, tran in zip(clean_names, bgm_names, trans):
             infer_tool.resample_to_22050(f'./record/{clean_name}.wav')
             for speaker_id in id_list:
-                #speakers = demjson.decode_file(f"configs/{config_name}")["speakers"]
+                speakers = demjson.decode_file(f"configs/{config_name}")["speakers"]
                 out_audio_name = str(name)
 
     
@@ -132,7 +140,11 @@ while True:
         name+=1
         continue
     threading.Thread(target=play, args=(audio, int(audio.shape[0] / input_size * 22050),)).start()
-
+    play_status=[1]
+    print("time taken: "+str(time.time()-a),"start playing")
+    while play_status[0]==1:
+        pass
+    print("play end")
     name+=1
 
-    print("time taken: "+str(time.time()-a))
+    
