@@ -5,7 +5,8 @@ from time import sleep
 import numpy as np
 import pyaudio
 import matplotlib.pyplot as plt
- 
+import threading
+
 SUCCESS = 0
 FAIL = 1
  
@@ -61,22 +62,29 @@ def STE(curFrame):
     # 短时能量
     amp = np.sum(np.abs(curFrame))
     return amp
- 
+
+def save_audio(name_num,audio2,FORMAT,frames):
+            wf = wave.open("record/"+str(name_num)+".wav", 'wb')
+            wf.setnchannels(1)
+            wf.setsampwidth(audio2.get_sample_size(FORMAT))
+            wf.setframerate(22050)
+            wf.writeframes(b"".join(frames))
+            wf.close()
  
 class Vad(object):
     def __init__(self):
         # 初始短时能量高门限
-        self.amp1 = 940
+        self.amp1 = 920
         # 初始短时能量低门限
-        self.amp2 = 120
+        self.amp2 = 100
         # 初始短时过零率高门限
-        self.zcr1 = 30
+        self.zcr1 = 20
         # 初始短时过零率低门限
         self.zcr2 = 2
         # 允许最大静音长度
-        self.maxsilence = 200     #允许换气的最长时间
+        self.maxsilence = 25     #允许换气的最长时间
         # 语音的最短长度
-        self.minlen = 40        #  过滤小音量
+        self.minlen = 20        #  过滤小音量
         # 偏移值
         self.offsets = 40
         self.offsete = 40
@@ -147,20 +155,14 @@ class Vad(object):
             self.frames.append(stream_data)
  
         if res ==3 and len(self.frames)>25:
- 
+            threading.Thread(target=save_audio, args=(name_num,audio2,FORMAT,self.frames,)).start()
                 # print(len(self.frames))
-            wf = wave.open("record/"+str(name_num)+".wav", 'wb')
-            wf.setnchannels(1)
-            wf.setsampwidth(audio2.get_sample_size(FORMAT))
-            wf.setframerate(22050)
-            wf.writeframes(b"".join(self.frames))
             self.frames = []
             stream2.stop_stream()
             stream2.close()
             audio2.terminate()
             audio2 = ""
             stream2 = ""
-            wf.close()
             print(name_num, "结束说话")
             name_num+=1
  
@@ -202,6 +204,7 @@ class Vad(object):
             # 可能处于语音段   能量处于浊音段，过零率在清音或浊音段
             elif amp > self.amp2 or zcr > self.zcr2:
                 status = 2
+                #self.silence = 0 #强制在浊音段开始录音
                 self.count += 1
             # 静音状态
             else:
@@ -214,6 +217,7 @@ class Vad(object):
             if amp > self.amp2 or zcr > self.zcr2:
                 self.count += 1
                 status = 2
+                self.silence=0
             # 语音将结束
             else:
                 # 静音还不够长，尚未结束
@@ -253,4 +257,3 @@ if __name__ == "__main__":
         byte_obj = stream.read(256)
         stream_test.check_ontime(byte_obj)
         num = num+1
-
