@@ -74,15 +74,15 @@ def save_audio(name_num,audio2,FORMAT,frames):
 class Vad(object):
     def __init__(self):
         # 初始短时能量高门限
-        self.amp1 = 920
+        self.amp1 = 940
         # 初始短时能量低门限
-        self.amp2 = 100
+        self.amp2 = 110
         # 初始短时过零率高门限
-        self.zcr1 = 20
+        self.zcr1 = 30
         # 初始短时过零率低门限
         self.zcr2 = 2
         # 允许最大静音长度
-        self.maxsilence = 25     #允许换气的最长时间
+        self.maxsilence = 50     #允许换气的最长时间
         # 语音的最短长度
         self.minlen = 20        #  过滤小音量
         # 偏移值
@@ -254,6 +254,10 @@ if __name__ == "__main__":
     name_num=1
     speaker=0
     while True:
-        byte_obj = stream.read(256)
-        stream_test.check_ontime(byte_obj)
-        num = num+1
+        try:
+            byte_obj = stream.read(256)
+            stream_test.check_ontime(byte_obj)
+            num = num+1
+        except as Error:
+            print(Error)
+            pass
