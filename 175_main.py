@@ -1,3 +1,4 @@
+#adapted to onnx model from https://huggingface.co/spaces/14-26AA/sovits_aishell3
 import onnxruntime
 import numpy as np
 import pyworld as pw
