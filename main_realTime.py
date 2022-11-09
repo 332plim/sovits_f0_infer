@@ -53,23 +53,27 @@ name = 1
 bgm_names = ["bgm"]
 # 合成多少歌曲时，若半音数量不足、自动补齐相同数量（按第一首歌的半音）
 #trans = [int(input("move_half_steps"))]  # 加减半音数（可为正负）s
-trans = [-3]
+trans = [8]
 # 每首歌同时输出的speaker_id
-id_list = [1]
+id_list = [4]
 
 """
-    "yilanqiu",-Male
-    "opencpop",-Mixed
-    "yunhao",-Mal
-    "jishuang"
+    "nyaru",
+    "taffy",-Female
+    "yunhao",-Male
+    "jishuang",-Female
+    "yilanqiu",
+    "opencpop"
 """
 
 # 每次合成长度，建议30s内，太高了爆掉显存(gtx1066一次15s以内）
 cut_time = 1
-#model_name = "270_epochs"  # 模型名称（pth文件夹下）
-model_name = "nyarumodel"
-#config_name = "sovits_pre.json"  # 模型配置（config文件夹下）
-config_name = "yilanqiu.json"
+model_name = "qinsu2.pth"  # 模型名称（pth文件夹下）
+#model_name = "nyarumodel.pth"
+config_name = "three.json"  # 模型配置（config文件夹下）
+#config_name = "yilanqiu.json"
+
+
 # 自行下载hubert-soft-0d54a1f4.pt改名为hubert.pt放置于pth文件夹下
 # https://github.com/bshall/hubert/releases/tag/v0.1
 hubert_soft = hubert_model.hubert_soft('pth/hubert.pt')
@@ -84,7 +88,7 @@ net_g_ms = SynthesizerTrn(
     hps_ms.train.segment_size // hps_ms.data.hop_length,
     n_speakers=hps_ms.data.n_speakers,
     **hps_ms.model)
-_ = utils.load_checkpoint(f"pth/{model_name}.pth", net_g_ms, None)
+_ = utils.load_checkpoint(f"pth/{model_name}", net_g_ms, None)
 _ = net_g_ms.eval().to(dev)
 
 featureInput = FeatureInput(hps_ms.data.sampling_rate, hps_ms.data.hop_length)
