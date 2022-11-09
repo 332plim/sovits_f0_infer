@@ -6,7 +6,7 @@ import numpy as np
 import pyaudio
 import matplotlib.pyplot as plt
 import threading
-
+import time
 SUCCESS = 0
 FAIL = 1
  
@@ -76,15 +76,16 @@ class Vad(object):
         # 初始短时能量高门限
         self.amp1 = 940
         # 初始短时能量低门限
-        self.amp2 = 110
+        self.amp2 = 40
         # 初始短时过零率高门限
         self.zcr1 = 30
         # 初始短时过零率低门限
-        self.zcr2 = 2
+        self.zcr2 = 4
         # 允许最大静音长度
-        self.maxsilence = 50     #允许换气的最长时间
+        self.maxsilence = 0.8     #允许换气的最长时间(unit:second)
+        self.silence_start_time=time.time()
         # 语音的最短长度
-        self.minlen = 20        #  过滤小音量
+        self.minlen = 25        #  过滤小音量
         # 偏移值
         self.offsets = 40
         self.offsete = 40
@@ -130,7 +131,7 @@ class Vad(object):
         # 获得音频过零率
         zcr = ZCR(data)
         # 获得音频的短时能量, 平方放大
-        amp = STE(data)**2
+        amp = STE(data)**4
         # 返回当前音频数据状态
         res = self.speech_status(amp, zcr)
  
@@ -146,7 +147,7 @@ class Vad(object):
                                       input=True,
                                       frames_per_buffer=256
                                       )
-            stream_data = stream2.read(256)
+            stream_data = stream2.read(256,exception_on_overflow = False)
             wave_data = np.frombuffer(stream_data, dtype=np.int16)
             # print(num, wave_data, len(stream_data))
             if speaker!=name_num:
@@ -199,41 +200,40 @@ class Vad(object):
             # 确定进入语音段
             if amp > self.amp1 or zcr > self.zcr1:    #超过最大  短时能量门限了
                 status = 2
-                self.silence = 0
+                self.silence_start_time = time.time()
                 self.count += 1
             # 可能处于语音段   能量处于浊音段，过零率在清音或浊音段
             elif amp > self.amp2 or zcr > self.zcr2:
                 status = 2
-                #self.silence = 0 #强制在浊音段开始录音
+                self.silence_start_time = time.time() #强制在浊音段开始录音
                 self.count += 1
             # 静音状态
             else:
                 status = 0
                 self.count = 0
-                self.count = 0
+                self.silence_start_time = time.time()
         # 2 = 语音段
         elif self.cur_status == 2:
             # 保持在语音段    能量处于浊音段，过零率在清音或浊音段
-            if amp > self.amp2 or zcr > self.zcr2:
+            if amp > self.amp1 or zcr > self.zcr1:
                 self.count += 1
                 status = 2
-                self.silence=0
+                self.silence_start_time = time.time()
             # 语音将结束
             else:
                 # 静音还不够长，尚未结束
-                self.silence += 1
-                if self.silence < self.maxsilence:
+                if time.time()-self.silence_start_time < self.maxsilence:
                     self.count += 1
                     status = 2
                 # 语音长度太短认为是噪声
                 elif self.count < self.minlen:
                     status = 0
-                    self.silence = 0
+                    self.silence_start_time = time.time()
                     self.count = 0
                 # 语音结束
                 else:
                     status = 3
-                    self.silence = 0
+                    self.silence_start_time = time.time()
                     self.count = 0
         return status
  
