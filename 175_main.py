@@ -1,4 +1,3 @@
-#adapted to onnx model from https://huggingface.co/spaces/14-26AA/sovits_aishell3
 import onnxruntime
 import numpy as np
 import pyworld as pw
@@ -13,12 +12,19 @@ import os
 import infer_tool
 
 #说话人ID（1-175）
-sid=22
+sid=173
 
-
+female_list=[22,173]
+male_list=[23,156]
+"""
+22-female
+23-male
+156-male
+"""
 #移调
-vc_transform=-4
-
+vc_transform=0
+if vc_transform in female_list:
+   vc_transform+=6
 name=1
 
 
